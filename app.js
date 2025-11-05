@@ -141,11 +141,9 @@ function isValidPosition(tetromino, offsetX, offsetY) {
             if (tetromino.shape[row][col]) {
                 const newX = tetromino.x + col + offsetX;
                 const newY = tetromino.y + row + offsetY;
-                
-                if (newX < 0) {
-                    return false;
-                }
-                if (newX >= FIELD_WIDTH) {
+
+                // [変更4] フィールドとの衝突チェック
+                if (newY >= 0 && playfield[newY][newX] !== 0) {
                     return false;
                 }
             }
