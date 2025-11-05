@@ -50,7 +50,7 @@
      }
  
      if (!gameLoopState.running) {
-         return; // pause中は以下の処理をしない
+         return;
      }
  
      handleMovementKey(event.key);
@@ -86,13 +86,51 @@
          case 'ArrowDown':
              moveTetromino(0, 1);
              break;
-         case ' ':
-             hardDropTetromino();
+        case ' ':
+            hardDropTetromino();
+             break;
+         case 'N':
+         case 'n':
+             rotateTetromino(-1);
+             break;
+         case 'M':
+         case 'm':
+             rotateTetromino(1); // 右回転
              break;
          default:
              break;
      }
  }
+
+// テトロミノを回転させる
+function rotateTetromino(direction) {
+    const originalShape = tetromino.shape;
+    const rotatedShape = rotateMatrix(tetromino.shape, direction);
+
+    tetromino.shape = rotatedShape;
+    if (!isValidPosition(tetromino, 0, 0)) {
+        tetromino.shape = originalShape;
+    }
+}
+
+// 行列を回転させる
+function rotateMatrix(matrix, direction) {
+    const size = matrix.length;
+    const rotated = Array.from({ length: size }, () => Array(size).fill(0));
+
+    for (let row = 0; row < size; row++) {
+        for (let col = 0; col < size; col++) {
+            if (direction === 1) {
+                // 右回転（時計回り）
+                rotated[col][size - 1 - row] = matrix[row][col];
+            } else if (direction === -1) {
+                // 左回転（反時計回り）
+                rotated[size - 1 - col][row] = matrix[row][col];
+            }
+        }
+    }
+    return rotated;
+}
 
 // ハードドロップ
 function hardDropTetromino() {
