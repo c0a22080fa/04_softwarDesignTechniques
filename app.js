@@ -308,8 +308,14 @@ function moveTetromino(deltaX, deltaY) {
          }           
      ];
  
-     // ランダムに1つ選んで返す。ただしTetrisのルールではない。
-     return minoes[Math.floor(Math.random() * minoes.length)];
+     const selected = minoes[Math.floor(Math.random() * minoes.length)];
+     return {
+         shape: selected.shape.map(row => [...row]),
+         color: selected.color,
+         name: selected.name,
+         x: selected.x,
+         y: selected.y
+     };
  }
  
  // テトロミノを描画する
