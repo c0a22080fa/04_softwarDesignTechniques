@@ -148,7 +148,7 @@ function hardDropTetromino() {
   */
  function renderFrame() {
     if (isGameOver) {
-        return; // ゲームオーバー時は描画を停止
+        return; 
     }
 
      // 画面をクリアしてから格子を描画する
@@ -189,7 +189,7 @@ function hardDropTetromino() {
  // ゲームの状態を更新する
  function updateGameState() {
     if (isGameOver) {
-        return; // ゲームオーバー中は更新しない
+        return; 
     }
 
     if (!isValidPosition(tetromino, 0, 1)) {
@@ -208,7 +208,7 @@ function hardDropTetromino() {
 function isGameOverCondition() {
     let gameOver = false;
     forEachTetrominoCell(tetromino, 0, 0, (x, y) => {
-        if (y <= 0) { // y <= 0 の場合にゲームオーバーと判定
+        if (y <= 0) { 
             gameOver = true;
         }
     });
@@ -230,14 +230,14 @@ function forEachTetrominoCell(tetromino, offsetX, offsetY, callback) {
 
 // テトロミノをフィールドに固定する
 function lockTetromino() {
-    let gameOver = false; // ゲームオーバー判定用フラグ
+    let gameOver = false; 
 
     forEachTetrominoCell(tetromino, 0, 0, (x, y) => {
         if (y >= 0) {
             playfield[y][x] = tetromino.color;
         }
         if (y < 0) {
-            gameOver = true; // y < 0 のセルがあればゲームオーバー
+            gameOver = true; 
         }
     });
 
@@ -249,17 +249,17 @@ function lockTetromino() {
 // ゲームオーバー時の処理
 function triggerGameOver() {
     isGameOver = true;
-    pauseGameLoop(); // ゲームループを停止
-    renderGameOverText(); // ゲームオーバーの表示
+    pauseGameLoop(); 
+    renderGameOverText(); 
 }
 
 // ゲームオーバーのテキストを描画する
 function renderGameOverText() {
-    playfieldContext.clearRect(0, 0, playfieldCanvas.width, playfieldCanvas.height); // 画面をクリア
-    playfieldContext.font = '64px Arial'; // フォントサイズを大きく設定
+    playfieldContext.clearRect(0, 0, playfieldCanvas.width, playfieldCanvas.height); 
+    playfieldContext.font = '64px Arial'; 
     playfieldContext.fillStyle = 'red';
     playfieldContext.textAlign = 'center';
-    playfieldContext.textBaseline = 'middle'; // テキストの基準線を中央に設定
+    playfieldContext.textBaseline = 'middle'; 
     playfieldContext.fillText('Game Over', playfieldCanvas.width / 2, playfieldCanvas.height / 2);
 }
 
