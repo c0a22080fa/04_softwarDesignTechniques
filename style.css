@@ -1,0 +1,32 @@
+@charset "UTF-8";
+
+html {
+    font-size: 100%;
+}
+
+canvas {
+    display: block;
+    margin: 0 auto;
+    background-color: #cccccc;
+}
+
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+h1 {
+    font-size: 2rem;
+    text-align: center;
+    color: white;
+    background-color: green;
+}
+
+h2 {
+    font-size: 1.5rem;
+    color: green;
+    background-color: white;
+    margin: 10px;
+    border: green double 5px;
+}
