@@ -60,6 +60,12 @@ let isGameOver = false;
  
  function handleSystemKey(key) {
      if (key === 'Enter') {
+         if (isGameOver) {
+             resetGameState();
+             renderFrame();
+             return true;
+         }
+ 
          if (!gameLoopState.running) {
              startGameLoop();
          } else {
