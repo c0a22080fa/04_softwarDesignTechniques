@@ -145,7 +145,19 @@ function hardDropTetromino() {
     while (isValidPosition(tetromino, 0, 1)) {
         tetromino.y += 1;
     }
-    lockTetromino(); 
+    handleTetrominoLocked();
+}
+
+// テトロミノが固定された後の共通処理
+function handleTetrominoLocked() {
+    lockTetromino();
+    
+    if (isGameOverCondition()) {
+        triggerGameOver();
+        return;
+    }
+    
+    clearFullRows();
     tetromino = createTetromino();
 }
  
@@ -199,15 +211,47 @@ function hardDropTetromino() {
     }
 
     if (!isValidPosition(tetromino, 0, 1)) {
-        lockTetromino();
-        if (isGameOverCondition()) {
-            triggerGameOver();
-        } else {
-            tetromino = createTetromino();
-        }
+        handleTetrominoLocked();
     } else {
         moveTetromino(0, 1);
     }
+}
+
+function renderPartialPlayfield(startRow, endRow) {
+    // 指定された範囲の行のみを再描画
+    for (let y = startRow; y <= endRow; y++) {
+        for (let x = 0; x < FIELD_WIDTH; x++) {
+            if (playfield[y][x] !== null) {
+                playfieldContext.fillStyle = playfield[y][x];
+                playfieldContext.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+                playfieldContext.strokeRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+            } else {
+                playfieldContext.clearRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+            }
+        }
+    }
+}
+
+// フィールドの行がすべて埋まった場合にその行を消す
+function clearFullRows() {
+    const newPlayfield = [];
+    let rowsCleared = 0;
+
+    for (let y = 0; y < playfield.length; y++) {
+        if (playfield[y].every(cell => cell)) {
+            rowsCleared++;
+        } else {
+            newPlayfield.push(playfield[y]);
+        }
+    }
+
+    // 削除された行の分だけ、上に空行を追加
+    while (newPlayfield.length < FIELD_HEIGHT) {
+        newPlayfield.unshift(Array(FIELD_WIDTH).fill(null));
+    }
+
+    playfield = newPlayfield;
+    return rowsCleared;
 }
 
 // ゲームオーバー条件を判定する
@@ -236,20 +280,11 @@ function forEachTetrominoCell(tetromino, offsetX, offsetY, callback) {
 
 // テトロミノをフィールドに固定する
 function lockTetromino() {
-    let gameOver = false; 
-
     forEachTetrominoCell(tetromino, 0, 0, (x, y) => {
         if (y >= 0) {
             playfield[y][x] = tetromino.color;
         }
-        if (y < 0) {
-            gameOver = true; 
-        }
     });
-
-    if (gameOver) {
-        triggerGameOver();
-    }
 }
 
 // ゲームオーバー時の処理
@@ -343,9 +378,7 @@ function moveTetromino(deltaX, deltaY) {
              }
          }
      }
- }
- 
- // テトロミノをランダムに生成する
+ } // テトロミノをランダムに生成する
  function createTetromino() {
      const minoes = [
          {
