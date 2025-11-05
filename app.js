@@ -24,6 +24,8 @@
  // テトロミノ
  let tetromino = createTetromino();
  
+  // フィールドの状態を保持する配列
+ let playfield = Array(FIELD_HEIGHT).fill(null).map(() => Array(FIELD_WIDTH).fill(null));
  ///////////////////////////////////////////////////////////////////////////////
  // main
  ///////////////////////////////////////////////////////////////////////////////
@@ -98,7 +100,8 @@
  
      // ここに描画処理を追加していく
      renderDebugInfo();
-     // renderFigure();
+
+     renderLockedBlocks();  
      renderTetromino(tetromino);
  
      // 再描画のタイミングでrenderFrame()が呼ばれるようにする。
@@ -129,15 +132,62 @@
  
  // ゲームの状態を更新する
  function updateGameState() {
-     moveTetromino(0, 1);
- }
- 
- function moveTetromino(deltaX, deltaY) {
-     tetromino.x += deltaX;
-     tetromino.y += deltaY;
- }
- 
- // ゲームを最初の状態に戻す
+    if (isTetrominoLocked()) {
+        tetromino = createTetromino();
+    } else {
+        moveTetromino(0, 1);
+    }
+}
+
+// テトロミノの各セルに対して処理を実行する共通関数
+function forEachTetrominoCell(tetromino, offsetX, offsetY, callback) {
+    for (let row = 0; row < tetromino.shape.length; row++) {
+        for (let col = 0; col < tetromino.shape[row].length; col++) {
+            if (tetromino.shape[row][col]) {
+                const targetX = tetromino.x + col + offsetX;
+                const targetY = tetromino.y + row + offsetY;
+                callback(targetX, targetY);
+            }
+        }
+    }
+}
+
+// テトロミノをフィールドに固定する
+function lockTetromino() {
+    forEachTetrominoCell(tetromino, 0, 0, (x, y) => {
+        if (y >= 0) {
+            playfield[y][x] = tetromino.color;
+        }
+    });
+}
+
+// テトロミノが指定位置に移動可能かチェックする
+function isValidPosition(tetromino, offsetX, offsetY) {
+    let isValid = true;
+    
+    forEachTetrominoCell(tetromino, offsetX, offsetY, (x, y) => {
+        // フィールド左右端
+        if (x < 0 || x >= FIELD_WIDTH) {
+            isValid = false;
+        }
+        // フィールド最下部
+        if (y >= FIELD_HEIGHT) {
+            isValid = false;
+        }
+    });
+    
+    return isValid;
+}
+
+// tetorominoを移動する
+function moveTetromino(deltaX, deltaY) {
+    if (isValidPosition(tetromino, deltaX, deltaY)) {
+        tetromino.x += deltaX;
+        tetromino.y += deltaY;
+    }
+}
+
+// ゲームを最初の状態に戻す
  function resetGameState() {
      tetromino = createTetromino();
      debugInfo.key = 'reset';
@@ -158,6 +208,19 @@
          for (let x = 0; x < FIELD_WIDTH; x++) {
              playfieldContext.strokeStyle = 'white';
              playfieldContext.strokeRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+         }
+     }
+ }
+ 
+ function renderLockedBlocks() {
+     playfieldContext.strokeStyle = 'black';
+     for (let y = 0; y < FIELD_HEIGHT; y++) {
+         for (let x = 0; x < FIELD_WIDTH; x++) {
+             if (playfield[y][x] !== null) {
+                 playfieldContext.fillStyle = playfield[y][x];  
+                 playfieldContext.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+                 playfieldContext.strokeRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+             }
          }
      }
  }
@@ -198,11 +261,61 @@
              name: 'L',
              x: 4,
              y: 0
-         }
+         },
+         {
+             shape: [
+                 [0, 1, 0],
+                 [1, 1, 1],
+                 [0, 0, 0]
+             ],
+             color: 'purple',
+             name: 'T',
+             x: 4,
+             y: 0
+         },
+         {
+             shape: [
+                 [0, 1, 0],
+                 [0, 1, 1],
+                 [0, 0, 1]
+             ],
+             color: 'green',
+             name: 'S',
+             x: 4,
+             y: 0
+         },   
+         {
+             shape: [
+                 [0, 1, 0],
+                 [1, 1, 0],
+                 [1, 0, 0]
+             ],
+             color: 'red',
+             name: 'Z',
+             x: 4,
+             y: 0
+         },
+         {
+             shape: [
+                 [0, 1, 1],
+                 [0, 1, 1],
+                 [0, 0, 0]
+             ],
+             color: 'yellow',
+             name: 'O',
+             x: 4,
+             y: 0
+         }           
      ];
  
-     // ランダムに1つ選んで返す。ただしTetrisのルールではない。
-     return minoes[Math.floor(Math.random() * minoes.length)];
+     const selected = minoes[Math.floor(Math.random() * minoes.length)];
+     return {
+         shape: selected.shape.map(row => [...row]),
+         color: selected.color,
+         name: selected.name,
+         x: selected.x,
+         y: selected.y
+     };
  }
  
  // テトロミノを描画する
