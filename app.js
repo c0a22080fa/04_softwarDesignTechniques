@@ -26,6 +26,8 @@
  
   // フィールドの状態を保持する配列
  let playfield = Array(FIELD_HEIGHT).fill(null).map(() => Array(FIELD_WIDTH).fill(null));
+ // ゲームオーバー状態を管理するフラグ
+let isGameOver = false;
  ///////////////////////////////////////////////////////////////////////////////
  // main
  ///////////////////////////////////////////////////////////////////////////////
@@ -145,6 +147,10 @@ function hardDropTetromino() {
   * loadの後に呼ばれる。その後、描画を妨げないタイミングで繰り返し呼び出される。
   */
  function renderFrame() {
+    if (isGameOver) {
+        return; // ゲームオーバー時は描画を停止
+    }
+
      // 画面をクリアしてから格子を描画する
      renderPlayfieldGrids();
  
@@ -182,12 +188,31 @@ function hardDropTetromino() {
  
  // ゲームの状態を更新する
  function updateGameState() {
-    if (isTetrominoLocked()) {
+    if (isGameOver) {
+        return; // ゲームオーバー中は更新しない
+    }
+
+    if (!isValidPosition(tetromino, 0, 1)) {
         lockTetromino();
-        tetromino = createTetromino();
+        if (isGameOverCondition()) {
+            triggerGameOver();
+        } else {
+            tetromino = createTetromino();
+        }
     } else {
         moveTetromino(0, 1);
     }
+}
+
+// ゲームオーバー条件を判定する
+function isGameOverCondition() {
+    let gameOver = false;
+    forEachTetrominoCell(tetromino, 0, 0, (x, y) => {
+        if (y <= 0) { // y <= 0 の場合にゲームオーバーと判定
+            gameOver = true;
+        }
+    });
+    return gameOver;
 }
 
 // テトロミノの各セルに対して処理を実行する共通関数
@@ -205,36 +230,60 @@ function forEachTetrominoCell(tetromino, offsetX, offsetY, callback) {
 
 // テトロミノをフィールドに固定する
 function lockTetromino() {
+    let gameOver = false; // ゲームオーバー判定用フラグ
+
     forEachTetrominoCell(tetromino, 0, 0, (x, y) => {
         if (y >= 0) {
             playfield[y][x] = tetromino.color;
         }
+        if (y < 0) {
+            gameOver = true; // y < 0 のセルがあればゲームオーバー
+        }
     });
+
+    if (gameOver) {
+        triggerGameOver();
+    }
 }
 
+// ゲームオーバー時の処理
+function triggerGameOver() {
+    isGameOver = true;
+    pauseGameLoop(); // ゲームループを停止
+    renderGameOverText(); // ゲームオーバーの表示
+}
+
+// ゲームオーバーのテキストを描画する
+function renderGameOverText() {
+    playfieldContext.clearRect(0, 0, playfieldCanvas.width, playfieldCanvas.height); // 画面をクリア
+    playfieldContext.font = '64px Arial'; // フォントサイズを大きく設定
+    playfieldContext.fillStyle = 'red';
+    playfieldContext.textAlign = 'center';
+    playfieldContext.textBaseline = 'middle'; // テキストの基準線を中央に設定
+    playfieldContext.fillText('Game Over', playfieldCanvas.width / 2, playfieldCanvas.height / 2);
+}
+
+// 有効な位置かどうかを判定する
 function isValidPosition(tetromino, offsetX, offsetY) {
     let isValid = true;
-    
+
     forEachTetrominoCell(tetromino, offsetX, offsetY, (x, y) => {
-        // フィールド左右端
         if (x < 0 || x >= FIELD_WIDTH) {
             isValid = false;
             return;
         }
-        // フィールド最下部
         if (y >= FIELD_HEIGHT) {
             isValid = false;
             return;
         }
         if (y < 0) {
-            return;
+            return; // y < 0 の場合はスキップ
         }
-        // 既存ブロックとの衝突チェック
         if (playfield[y][x] !== null) {
             isValid = false;
         }        
     });
-    
+
     return isValid;
 }
 
@@ -254,6 +303,7 @@ function moveTetromino(deltaX, deltaY) {
  function resetGameState() {
      tetromino = createTetromino();
      playfield = Array(FIELD_HEIGHT).fill(null).map(() => Array(FIELD_WIDTH).fill(null));
+     isGameOver = false; 
      debugInfo.key = 'reset';
  }
  
