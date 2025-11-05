@@ -86,10 +86,22 @@
          case 'ArrowDown':
              moveTetromino(0, 1);
              break;
+         case ' ':
+             hardDropTetromino();
+             break;
          default:
              break;
      }
  }
+
+// ハードドロップ
+function hardDropTetromino() {
+    while (isValidPosition(tetromino, 0, 1)) {
+        tetromino.y += 1;
+    }
+    lockTetromino(); 
+    tetromino = createTetromino();
+}
  
  /**
   * loadの後に呼ばれる。その後、描画を妨げないタイミングで繰り返し呼び出される。
