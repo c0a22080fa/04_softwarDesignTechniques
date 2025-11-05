@@ -131,19 +131,27 @@
  
  // ゲームの状態を更新する
  function updateGameState() {
-     moveTetromino(0, 1);
- }
- 
+    if (isTetrominoLocked()) {
+        tetromino = createTetromino();
+    } else {
+        moveTetromino(0, 1);
+    }
+}
+
 // テトロミノが指定位置に移動可能かチェックする
 function isValidPosition(tetromino, offsetX, offsetY) {
     for (let row = 0; row < tetromino.shape.length; row++) {
         for (let col = 0; col < tetromino.shape[row].length; col++) {
             if (tetromino.shape[row][col]) {
-                const newX = tetromino.x + col + offsetX;
-                const newY = tetromino.y + row + offsetY;
+                const targetX = tetromino.x + col + offsetX;
+                const targetY = tetromino.y + row + offsetY;
 
-                // [変更4] フィールドとの衝突チェック
-                if (newY >= 0 && playfield[newY][newX] !== 0) {
+                // フィールド左右端
+                if (targetX < 0 || targetX >= FIELD_WIDTH) {
+                    return false;
+                }
+                // フィールド最下部
+                if (targetY >= FIELD_HEIGHT) {
                     return false;
                 }
             }
