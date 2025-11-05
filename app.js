@@ -132,12 +132,35 @@
      moveTetromino(0, 1);
  }
  
- function moveTetromino(deltaX, deltaY) {
-     tetromino.x += deltaX;
-     tetromino.y += deltaY;
- }
- 
- // ゲームを最初の状態に戻す
+// テトロミノが指定位置に移動可能かチェックする
+function isValidPosition(tetromino, offsetX, offsetY) {
+    for (let row = 0; row < tetromino.shape.length; row++) {
+        for (let col = 0; col < tetromino.shape[row].length; col++) {
+            if (tetromino.shape[row][col]) {
+                const newX = tetromino.x + col + offsetX;
+                const newY = tetromino.y + row + offsetY;
+                
+                if (newX < 0) {
+                    return false;
+                }
+                if (newX >= FIELD_WIDTH) {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+// tetorominoを移動する
+function moveTetromino(deltaX, deltaY) {
+    if (isValidPosition(tetromino, deltaX, deltaY)) {
+        tetromino.x += deltaX;
+        tetromino.y += deltaY;
+    }
+}
+
+// ゲームを最初の状態に戻す
  function resetGameState() {
      tetromino = createTetromino();
      debugInfo.key = 'reset';
