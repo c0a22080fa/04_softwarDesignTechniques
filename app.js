@@ -24,7 +24,8 @@
  // テトロミノ
  let tetromino = createTetromino();
  
-  // フィールドの状態を保持する配列
+ // コミット③: フィールドの配列を追加
+ // フィールドの状態を保持する配列
  let playfield = Array(FIELD_HEIGHT).fill(null).map(() => Array(FIELD_WIDTH).fill(null));
  // ゲームオーバー状態を管理するフラグ
 let isGameOver = false;
@@ -58,6 +59,7 @@ let isGameOver = false;
      handleMovementKey(event.key);
  }
  
+ // コミット⑪: ゲームオーバーになってから初めから始ますようにEnterに条件を追加
  function handleSystemKey(key) {
      if (key === 'Enter') {
          if (isGameOver) {
@@ -83,6 +85,7 @@ let isGameOver = false;
      return false;
  }
  
+ // コミット②: テトロミノの操作の横幅制限の追加
  function handleMovementKey(key) {
      switch (key) {
          case 'ArrowRight':
@@ -110,6 +113,7 @@ let isGameOver = false;
      }
  }
 
+// コミット⑨: テとろみの回転処理を追加
 // テトロミノを回転させる
 function rotateTetromino(direction) {
     const originalShape = tetromino.shape;
@@ -140,6 +144,7 @@ function rotateMatrix(matrix, direction) {
     return rotated;
 }
 
+// コミット⑧: Spaseによるハードドロップの追加
 // ハードドロップ
 function hardDropTetromino() {
     while (isValidPosition(tetromino, 0, 1)) {
@@ -204,6 +209,7 @@ function handleTetrominoLocked() {
      gameLoopState.running = false;
  }
  
+ // コミット⑤: 最下部到達時次のテトリスが出てくるように修正
  // ゲームの状態を更新する
  function updateGameState() {
     if (isGameOver) {
@@ -232,6 +238,7 @@ function renderPartialPlayfield(startRow, endRow) {
     }
 }
 
+// コミット⑫: すべて埋まった行を削除するテトリスを追加
 // フィールドの行がすべて埋まった場合にその行を消す
 function clearFullRows() {
     const newPlayfield = [];
@@ -254,6 +261,7 @@ function clearFullRows() {
     return rowsCleared;
 }
 
+// コミット⑩: ゲームオーバーの判定とテキストの表示を追加
 // ゲームオーバー条件を判定する
 function isGameOverCondition() {
     let gameOver = false;
@@ -278,6 +286,7 @@ function forEachTetrominoCell(tetromino, offsetX, offsetY, callback) {
     }
 }
 
+// コミット⑥: テトロミノが積み上がるように状態を保存するようにした
 // テトロミノをフィールドに固定する
 function lockTetromino() {
     forEachTetrominoCell(tetromino, 0, 0, (x, y) => {
@@ -304,6 +313,7 @@ function renderGameOverText() {
     playfieldContext.fillText('Game Over', playfieldCanvas.width / 2, playfieldCanvas.height / 2);
 }
 
+// コミット④: 当たり判定をフィールドの配列にて行うように変更
 // 有効な位置かどうかを判定する
 function isValidPosition(tetromino, offsetX, offsetY) {
     let isValid = true;
@@ -367,6 +377,7 @@ function moveTetromino(deltaX, deltaY) {
      }
  }
  
+ // コミット⑦: 色の保存が間に合わず積み上がる時に前のテトロミノの色が引き継がれるのを修正
  function renderLockedBlocks() {
      playfieldContext.strokeStyle = 'black';
      for (let y = 0; y < FIELD_HEIGHT; y++) {
@@ -379,6 +390,7 @@ function moveTetromino(deltaX, deltaY) {
          }
      }
  } // テトロミノをランダムに生成する
+ // コミット①: T,S,Z,Oのテトロミの追加
  function createTetromino() {
      const minoes = [
          {
