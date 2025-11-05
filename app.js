@@ -1,4 +1,4 @@
- // for playfield grid
+// for playfield grid
  const CELL_SIZE = 32;
  const FIELD_WIDTH = 10;
  const FIELD_HEIGHT = 20;
@@ -133,6 +133,7 @@
  // ゲームの状態を更新する
  function updateGameState() {
     if (isTetrominoLocked()) {
+        lockTetromino();
         tetromino = createTetromino();
     } else {
         moveTetromino(0, 1);
@@ -144,9 +145,9 @@ function forEachTetrominoCell(tetromino, offsetX, offsetY, callback) {
     for (let row = 0; row < tetromino.shape.length; row++) {
         for (let col = 0; col < tetromino.shape[row].length; col++) {
             if (tetromino.shape[row][col]) {
-                const targetX = tetromino.x + col + offsetX;
-                const targetY = tetromino.y + row + offsetY;
-                callback(targetX, targetY);
+                const x = tetromino.x + col + offsetX;
+                const y = tetromino.y + row + offsetY;
+                callback(x, y);
             }
         }
     }
@@ -161,7 +162,6 @@ function lockTetromino() {
     });
 }
 
-// テトロミノが指定位置に移動可能かチェックする
 function isValidPosition(tetromino, offsetX, offsetY) {
     let isValid = true;
     
@@ -169,14 +169,27 @@ function isValidPosition(tetromino, offsetX, offsetY) {
         // フィールド左右端
         if (x < 0 || x >= FIELD_WIDTH) {
             isValid = false;
+            return;
         }
         // フィールド最下部
         if (y >= FIELD_HEIGHT) {
             isValid = false;
+            return;
         }
+        if (y < 0) {
+            return;
+        }
+        // 既存ブロックとの衝突チェック
+        if (playfield[y][x] !== null) {
+            isValid = false;
+        }        
     });
     
     return isValid;
+}
+
+function isTetrominoLocked() {
+    return !isValidPosition(tetromino, 0, 1);
 }
 
 // tetorominoを移動する
@@ -190,6 +203,7 @@ function moveTetromino(deltaX, deltaY) {
 // ゲームを最初の状態に戻す
  function resetGameState() {
      tetromino = createTetromino();
+     playfield = Array(FIELD_HEIGHT).fill(null).map(() => Array(FIELD_WIDTH).fill(null));
      debugInfo.key = 'reset';
  }
  
@@ -338,4 +352,3 @@ function moveTetromino(deltaX, deltaY) {
      playfieldContext.fillRect(x, y, CELL_SIZE, CELL_SIZE);
      playfieldContext.strokeRect(x, y, CELL_SIZE, CELL_SIZE);
  }
- 
